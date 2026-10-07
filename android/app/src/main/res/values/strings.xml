@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">UangLapangan</string>
+    <string name="title_activity_main">UangLapangan</string>
+    <string name="package_name">com.uanglapangan.app</string>
+    <string name="custom_url_scheme">com.uanglapangan.app</string>
+</resources>

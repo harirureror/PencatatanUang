@@ -1,0 +1,132 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1790650915036,
+      "tag": "0000_ambitious_iceman",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1790654470250,
+      "tag": "0001_transaction_category_type_match",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790870343807,
+      "tag": "0002_receipts",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1790870355896,
+      "tag": "0003_receipt_flags",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1790871233160,
+      "tag": "0004_project_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1790871352391,
+      "tag": "0005_project_relations",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1790871975836,
+      "tag": "0006_sync_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1790871989541,
+      "tag": "0007_sync_touch_triggers",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1790873722924,
+      "tag": "0008_soft_delete_rules",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1790874039756,
+      "tag": "0009_sync_hub_metadata",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1790874063075,
+      "tag": "0010_sync_rev_triggers",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1790875581191,
+      "tag": "0011_backup_archives",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1790876252347,
+      "tag": "0012_backup_one_running",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1790876651069,
+      "tag": "0013_drive_connections",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1790877404525,
+      "tag": "0014_receipt_triggers_soft_delete",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1790877782059,
+      "tag": "0015_notifications",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1790927955596,
+      "tag": "0016_auth_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1791335393242,
+      "tag": "0017_settings_categories_guards",
+      "breakpoints": true
+    }
+  ]
+}

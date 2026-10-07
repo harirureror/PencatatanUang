@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="13" fill="#2b2b2b">
+<rect width="300" height="400" fill="#fbfff7"/>
+<path d="M0 392 l10 8 10-8 10 8 10-8 10 8 10-8 10 8 10-8 10 8 10-8 10 8 10-8 10 8 10-8 10 8 10-8 10 8 10-8 10 8 10-8 10 8 10-8 10 8 10-8 10 8 10-8 10 8 10-8 10 8 10-8 V400 H0Z" fill="#e5e5e5"/>
+<text x="150" y="44" text-anchor="middle" font-size="16" font-weight="700">TB MAKMUR</text>
+<text x="150" y="66" text-anchor="middle" font-size="11" fill="#666">Pasar Guntur, Garut</text>
+<text x="24" y="104" font-size="11" fill="#666">Tgl: 26/09/2026</text>
+<line x1="24" y1="118" x2="276" y2="118" stroke="#999" stroke-dasharray="4 3"/>
+<text x="24" y="150">Patok kayu 40 bh</text><text x="276" y="150" text-anchor="end">240.000</text><text x="24" y="176">Cat merah 1 kg</text><text x="276" y="176" text-anchor="end">85.000</text><text x="24" y="202">Kuas</text><text x="276" y="202" text-anchor="end">50.000</text>
+<line x1="24" y1="220" x2="276" y2="220" stroke="#999" stroke-dasharray="4 3"/>
+<text x="24" y="246" font-weight="700">TOTAL</text><text x="276" y="246" text-anchor="end" font-weight="700">Rp 375.000</text>
+<text x="150" y="298" text-anchor="middle" font-size="11" fill="#666">-- Terima kasih --</text>
+<text x="150" y="318" text-anchor="middle" font-size="10" fill="#aaa">CONTOH · DATA TIRUAN</text>
+</svg>

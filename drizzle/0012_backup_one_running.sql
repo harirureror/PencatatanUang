@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `backup_archives_one_running` ON `backup_archives` (`user_id`) WHERE "backup_archives"."status" = 'proses';
