@@ -33,12 +33,18 @@ required("BETTER_AUTH_URL", isHttps, "Harus https://… (alamat publik aplikasi,
 minLength("SYNC_TOKEN_SECRET", 32);
 minLength("CRON_SECRET", 16);
 
-// Google Drive
-required("GOOGLE_CLIENT_ID", (v) => v.endsWith(".apps.googleusercontent.com"), "Dari Google Cloud Console (OAuth client Web).");
-required("GOOGLE_CLIENT_SECRET");
-required("GOOGLE_REDIRECT_URI", (v) => isHttps(v) && v.endsWith("/api/drive/callback"), "https://<domain>/api/drive/callback");
-if (env.BETTER_AUTH_URL && env.GOOGLE_REDIRECT_URI && !env.GOOGLE_REDIRECT_URI.startsWith(env.BETTER_AUTH_URL.replace(/\/$/, ""))) {
-  warnings.push("GOOGLE_REDIRECT_URI tidak berada di domain BETTER_AUTH_URL — pastikan memang disengaja.");
+// Google Drive (backup) — boleh menyusul: tanpa ini aplikasi tetap jalan, backup belum bisa dipakai.
+const googleKeys = ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REDIRECT_URI"];
+const googleFilled = googleKeys.filter((k) => env[k]);
+if (googleFilled.length === 0) {
+  warnings.push("GOOGLE_* kosong — backup ke Google Drive belum bisa dipakai (boleh diisi nanti, lalu Redeploy).");
+} else {
+  required("GOOGLE_CLIENT_ID", (v) => v.endsWith(".apps.googleusercontent.com"), "Dari Google Cloud Console (OAuth client Web).");
+  required("GOOGLE_CLIENT_SECRET");
+  required("GOOGLE_REDIRECT_URI", (v) => isHttps(v) && v.endsWith("/api/drive/callback"), "https://<domain>/api/drive/callback");
+  if (env.BETTER_AUTH_URL && env.GOOGLE_REDIRECT_URI && !env.GOOGLE_REDIRECT_URI.startsWith(env.BETTER_AUTH_URL.replace(/\/$/, ""))) {
+    warnings.push("GOOGLE_REDIRECT_URI tidak berada di domain BETTER_AUTH_URL — pastikan memang disengaja.");
+  }
 }
 minLength("DRIVE_TOKEN_KEY", 32);
 

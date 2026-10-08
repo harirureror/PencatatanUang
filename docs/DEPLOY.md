@@ -10,7 +10,7 @@ Ringkasan layanan:
 | Hosting aplikasi + jadwal backup | Vercel | Wajib | Gratis (Hobby) |
 | Database pusat (hub sinkron) | Turso | Wajib | Gratis |
 | Foto struk & arsip sementara | Cloudflare R2 | Wajib di Vercel | Gratis s.d. 10 GB |
-| Backup ke Drive pengguna | Google Cloud (OAuth) | Wajib | Gratis |
+| Backup ke Drive pengguna | Google Cloud (OAuth) | Disarankan (boleh menyusul) | Gratis |
 | Email lupa sandi & notifikasi | Resend | Disarankan | Gratis 3.000/bulan |
 | Kode lupa sandi via WhatsApp | Fonnte | Disarankan | Paket Fonnte |
 
@@ -62,6 +62,9 @@ Google Drive semua pengguna.
    `node --env-file=.env.production scripts/migrate-storage-to-r2.mjs --dry-run` lalu tanpa `--dry-run`.
 
 ## 3. Google Cloud (backup ke Google Drive pribadi)
+
+Boleh dikerjakan belakangan: tanpa langkah ini aplikasi tetap berjalan, hanya tombol *Hubungkan
+Google Drive* di menu Backup belum berfungsi. Setelah mengisi `GOOGLE_*` di Vercel, klik *Redeploy*.
 
 1. <https://console.cloud.google.com> → buat project → **APIs & Services → Library** → aktifkan
    **Google Drive API**.
