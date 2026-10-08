@@ -30,12 +30,16 @@ Google Drive semua pengguna.
 ## 1. Turso (database)
 
 1. Pasang CLI: <https://docs.turso.tech/cli/installation>, lalu `turso auth login`.
-2. Buat database dekat pengguna (Singapura):
+2. Buat database di region **Tokyo** (`aws-ap-northeast-1`) — Turso tidak punya Singapura; bila
+   Tokyo tidak tersedia pilih Mumbai (`aws-ap-south-1`). Lewat dasbor app.turso.tech
+   (*Create Database* → pilih region) atau CLI:
    ```bash
-   turso db create uanglapangan --location sin
+   turso db create uanglapangan --group default   # region mengikuti group; pilih Tokyo saat membuat group
    turso db show uanglapangan --url        # → DATABASE_URL (libsql://…)
    turso db tokens create uanglapangan     # → DATABASE_AUTH_TOKEN
    ```
+   > Server aplikasi harus se-kota dengan database: `vercel.json` sudah mengatur fungsi Vercel
+   > berjalan di Tokyo (`"regions": ["hnd1"]`). Bila database Anda di Mumbai, ganti menjadi `["bom1"]`.
 3. Terapkan skema (dari folder proyek, **tanpa** seed — seed hanya untuk data demo):
    ```bash
    DATABASE_URL=libsql://… DATABASE_AUTH_TOKEN=… npm run db:migrate
