@@ -4,6 +4,8 @@
 //    (aman dipanggil berulang — yang sudah dibackup dilewati).
 // 2) Sekali sehari menyalin database ke data/salinan-db/ (7 hari terakhir disimpan), sebagai
 //    cadangan lapis kedua di server.
+// 3) Sekali sehari, bila MIRROR_DATABASE_URL diisi, menyalin seluruh data ke salinan yang
+//    dibuka lewat Vercel (scripts/salin-data.mjs).
 import { existsSync } from "node:fs";
 import { mkdir, readdir, rm } from "node:fs/promises";
 import path from "node:path";
@@ -59,7 +61,21 @@ async function snapshotDatabase() {
   }
 }
 
-for (const [name, task] of [["backup terjadwal", callBackupCron], ["salinan database", snapshotDatabase]]) {
+/** Sekali sehari: salin data ke salinan (Turso + R2 yang dibuka lewat Vercel), bila diatur. */
+async function copyToMirror() {
+  if (!process.env.MIRROR_DATABASE_URL) return;
+  const { salin, terakhirDisalin } = await import("../../scripts/salin-data.mjs");
+  const today = new Date().toISOString().slice(0, 10);
+  if ((await terakhirDisalin())?.slice(0, 10) === today) return;
+  await salin({ log });
+}
+
+const tasks = [
+  ["backup terjadwal", callBackupCron],
+  ["salinan database", snapshotDatabase],
+  ["salinan ke Vercel", copyToMirror],
+];
+for (const [name, task] of tasks) {
   try {
     await task();
   } catch (error) {

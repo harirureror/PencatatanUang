@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/auth/session-provider";
 import { MoneyFormatProvider } from "@/components/money/money-provider";
+import { MirrorBanner } from "@/components/local/mirror-banner";
 import { OfflineBanner } from "@/components/local/offline-banner";
 import { SyncManager } from "@/components/local/sync-manager";
 import { NativeBridge } from "@/components/native/native-bridge";
@@ -55,6 +56,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-muted/40 pt-[env(safe-area-inset-top)]">
         <SessionProvider initialUser={user}>
           <MoneyFormatProvider display={moneyDisplay}>
+          <MirrorBanner />
           <OfflineBanner />
           {children}
           {/* Sinkron hanya untuk yang sudah masuk (halaman masuk/daftar tidak perlu). */}

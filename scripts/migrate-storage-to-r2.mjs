@@ -8,16 +8,14 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
-import { AwsClient } from "aws4fetch";
+import { r2FromEnv } from "./lib/r2.mjs";
 
-const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET } = process.env;
-if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET) {
+const r2 = r2FromEnv();
+if (!r2) {
   console.error("Isi dulu R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET.");
   process.exit(1);
 }
 const dryRun = process.argv.includes("--dry-run");
-const endpoint = (process.env.R2_ENDPOINT ?? `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`).replace(/\/$/, "");
-const client = new AwsClient({ accessKeyId: R2_ACCESS_KEY_ID, secretAccessKey: R2_SECRET_ACCESS_KEY, service: "s3", region: "auto" });
 const root = path.resolve(process.env.STORAGE_DIR ?? "./data");
 const TYPES = { jpg: "image/jpeg", png: "image/png", webp: "image/webp", heic: "image/heic", heif: "image/heif", zip: "application/zip" };
 
@@ -35,7 +33,6 @@ async function* walk(dir) {
   }
 }
 
-const url = (key) => `${endpoint}/${R2_BUCKET}/${key.split("/").map(encodeURIComponent).join("/")}`;
 const stats = { uploaded: 0, skipped: 0, failed: 0 };
 
 for (const prefix of ["receipts", "backups"]) {
@@ -46,16 +43,12 @@ for (const prefix of ["receipts", "backups"]) {
       console.log("akan diunggah:", key);
       continue;
     }
-    const res = await client.fetch(url(key), {
-      method: "PUT",
-      body: await readFile(file),
-      headers: { "content-type": TYPES[ext] ?? "application/octet-stream", "if-none-match": "*" },
-    });
-    if (res.ok) stats.uploaded++;
-    else if (res.status === 412) stats.skipped++;
-    else {
+    try {
+      if (await r2.put(key, await readFile(file), TYPES[ext])) stats.uploaded++;
+      else stats.skipped++;
+    } catch (error) {
       stats.failed++;
-      console.error("gagal:", key, res.status, await res.text().catch(() => ""));
+      console.error("gagal:", key, error instanceof Error ? error.message : String(error));
     }
   }
 }

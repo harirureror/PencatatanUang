@@ -1,3 +1,4 @@
+import { mirrorOf } from "@/lib/mirror";
 import { runDueBackups } from "@/server/backup-runner";
 
 const noStore = { "Cache-Control": "no-store" };
@@ -16,6 +17,10 @@ export async function GET(request: Request) {
   }
   if (secret && request.headers.get("authorization") !== `Bearer ${secret}`) {
     return Response.json({ error: "Tidak diizinkan." }, { status: 401, headers: noStore });
+  }
+  // Server salinan tidak membuat backup: datanya milik aplikasi utama, yang membackup sendiri.
+  if (mirrorOf()) {
+    return Response.json({ data: { checked: 0, skipped: 0, started: [], mirror: true } }, { headers: noStore });
   }
 
   try {

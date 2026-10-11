@@ -3,8 +3,11 @@ import { getSessionCookie } from "better-auth/cookies";
 
 import { isGuestOnlyPath, isPublicApiPath, isPublicPath, signInHref } from "@/lib/auth-routes";
 import { safeNextPath } from "@/lib/auth-rules";
+import { isMirrorWriteAllowed, MIRROR_MESSAGE, mirrorOf } from "@/lib/mirror";
 import { auth } from "@/server/auth";
 import { USER_ID_HEADER } from "@/server/current-user";
+
+const READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 /**
  * Gerbang data per pemilik akun. Untuk setiap halaman & API:
@@ -18,6 +21,14 @@ export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const forwarded = new Headers(request.headers);
   forwarded.delete(USER_ID_HEADER);
+
+  // Mode salinan: tolak semua perubahan data (API maupun server action di halaman).
+  if (mirrorOf() && !READ_METHODS.has(request.method) && !isMirrorWriteAllowed(pathname)) {
+    return NextResponse.json(
+      { error: MIRROR_MESSAGE, code: "mirror" },
+      { status: 423, headers: { "Cache-Control": "no-store" } },
+    );
+  }
 
   // Tanpa cookie sesi sama sekali tidak perlu bertanya ke database.
   const session = getSessionCookie(request) ? await auth.api.getSession({ headers: request.headers }).catch(() => null) : null;
