@@ -82,16 +82,25 @@ export async function putObject(
   assertKey(key);
   const c = r2Config();
   if (c) {
-    const res = await r2Request(c, "PUT", key, {
-      body: new Uint8Array(bytes),
-      headers: {
-        "content-type": contentType,
-        // Tolak di sisi R2 bila sudah ada (atomik, tanpa cek-lalu-tulis).
-        ...(overwrite ? {} : { "if-none-match": "*" }),
-      },
-    });
+    const put = (conditional: boolean) =>
+      r2Request(c, "PUT", key, {
+        body: new Uint8Array(bytes),
+        headers: {
+          "content-type": contentType,
+          // Tolak di sisi R2 bila sudah ada (atomik, tanpa cek-lalu-tulis).
+          ...(conditional ? { "if-none-match": "*" } : {}),
+        },
+      });
+    let res = await put(!overwrite);
+    // Penyedia yang tidak mendukung PUT bersyarat (501 / 400 InvalidRequest untuk header itu):
+    // cek keberadaan dulu lalu tulis biasa. Kunci selalu id acak baru, jadi risikonya kecil.
+    if (!overwrite && (res.status === 501 || res.status === 400)) {
+      const head = await r2Request(c, "HEAD", key);
+      if (head.ok) throw new ObjectExistsError(key);
+      res = await put(false);
+    }
     if (res.status === 412) throw new ObjectExistsError(key);
-    if (!res.ok) throw new Error(`R2 PUT ${key} gagal: ${res.status} ${await res.text().catch(() => "")}`);
+    if (!res.ok) throw new Error(`R2 PUT ${key} gagal: ${res.status} ${(await res.text().catch(() => "")).slice(0, 300)}`);
     return;
   }
   const full = localPath(key);
@@ -134,4 +143,23 @@ export async function deleteObject(key: string): Promise<void> {
   const full = localPath(key);
   await rm(/*turbopackIgnore: true*/ full, { force: true });
   await rmdir(/*turbopackIgnore: true*/ path.dirname(full)).catch(() => {}); // masih ada isi → biarkan
+}
+
+/**
+ * Uji penyimpanan: tulis → baca → hapus satu berkas kecil. Untuk halaman diagnostik — tidak
+ * pernah mengembalikan nilai rahasia, hanya driver, nama bucket, dan pesan galat penyedia.
+ */
+export async function checkStorage(): Promise<{ driver: StorageDriver; bucket: string | null; ok: boolean; error?: string }> {
+  const driver = storageDriver();
+  const bucket = r2Config()?.bucket ?? null;
+  const key = `diagnostik/uji-${Date.now()}.txt`;
+  try {
+    await putObject(key, new TextEncoder().encode("uji"), { contentType: "text/plain" });
+    const back = await getObject(key);
+    await deleteObject(key);
+    if (back?.toString() !== "uji") return { driver, bucket, ok: false, error: "Berkas yang dibaca tidak sama dengan yang ditulis." };
+    return { driver, bucket, ok: true };
+  } catch (error) {
+    return { driver, bucket, ok: false, error: error instanceof Error ? error.message : String(error) };
+  }
 }
