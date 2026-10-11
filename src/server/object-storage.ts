@@ -57,8 +57,31 @@ export function storageDriver(): StorageDriver {
 const objectUrl = (c: R2Config, key: string) =>
   `${c.endpoint}/${c.bucket}/${key.split("/").map(encodeURIComponent).join("/")}`;
 
-async function r2Request(c: R2Config, method: string, key: string, init: RequestInit = {}): Promise<Response> {
-  return c.client.fetch(objectUrl(c, key), { method, ...init });
+/**
+ * Kirim request bertanda tangan ke R2. Tanda tangan dibuat aws4fetch, tetapi pengirimannya
+ * dilakukan sendiri dengan isi berkas UTUH + Content-Length eksplisit: bila Request hasil
+ * aws4fetch dikirim apa adanya, isinya menjadi stream dan (di runtime serverless) terkirim
+ * "chunked" tanpa ukuran — R2 menolaknya dengan 411 MissingContentLength.
+ */
+async function r2Request(
+  c: R2Config,
+  method: string,
+  key: string,
+  init: { body?: Uint8Array; headers?: Record<string, string> } = {},
+): Promise<Response> {
+  const url = objectUrl(c, key);
+  const body = init.body ? new Uint8Array(init.body) : undefined;
+  const signed = await c.client.sign(url, {
+    method,
+    headers: {
+      ...init.headers,
+      // Isi tidak ikut ditandatangani (HTTPS yang menjaga keutuhannya) → tidak perlu membaca stream.
+      "x-amz-content-sha256": "UNSIGNED-PAYLOAD",
+    },
+  });
+  const headers = new Headers(signed.headers);
+  if (body) headers.set("content-length", String(body.byteLength));
+  return fetch(url, { method, headers, body });
 }
 
 // ---- Driver lokal -------------------------------------------------------------------------
@@ -84,7 +107,7 @@ export async function putObject(
   if (c) {
     const put = (conditional: boolean) =>
       r2Request(c, "PUT", key, {
-        body: new Uint8Array(bytes),
+        body: bytes,
         headers: {
           "content-type": contentType,
           // Tolak di sisi R2 bila sudah ada (atomik, tanpa cek-lalu-tulis).
@@ -152,12 +175,16 @@ export async function deleteObject(key: string): Promise<void> {
 export async function checkStorage(): Promise<{ driver: StorageDriver; bucket: string | null; ok: boolean; error?: string }> {
   const driver = storageDriver();
   const bucket = r2Config()?.bucket ?? null;
-  const key = `diagnostik/uji-${Date.now()}.txt`;
+  const key = `diagnostik/uji-${Date.now()}.bin`;
   try {
-    await putObject(key, new TextEncoder().encode("uji"), { contentType: "text/plain" });
+    // Seukuran foto struk (256 KB): berkas beberapa byte bisa lolos padahal unggahan besar gagal.
+    const sample = new Uint8Array(256 * 1024).map((_, i) => i % 251);
+    await putObject(key, sample, { contentType: "application/octet-stream" });
     const back = await getObject(key);
     await deleteObject(key);
-    if (back?.toString() !== "uji") return { driver, bucket, ok: false, error: "Berkas yang dibaca tidak sama dengan yang ditulis." };
+    if (!back || back.length !== sample.length || back[1000] !== sample[1000]) {
+      return { driver, bucket, ok: false, error: "Berkas yang dibaca tidak sama dengan yang ditulis." };
+    }
     return { driver, bucket, ok: true };
   } catch (error) {
     return { driver, bucket, ok: false, error: error instanceof Error ? error.message : String(error) };
