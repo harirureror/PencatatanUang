@@ -3,6 +3,8 @@
 Panduan dari nol sampai aplikasi bisa dipakai tim. Urutannya penting: siapkan layanan dulu,
 kumpulkan nilai env, baru deploy. Semua nama variabel ada di [`.env.example`](../.env.example).
 
+> Punya VPS sendiri? Lihat [DEPLOY-VPS.md](DEPLOY-VPS.md) — tanpa Turso dan R2.
+
 Ringkasan layanan:
 
 | Kebutuhan | Layanan | Wajib? | Biaya awal |

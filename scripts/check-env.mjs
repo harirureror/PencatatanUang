@@ -24,8 +24,13 @@ const required = (name, check, hint) => {
 const isHttps = (v) => /^https:\/\/[^/]+/.test(v);
 
 // Database
-required("DATABASE_URL", (v) => /^(libsql|https|wss):\/\//.test(v), "Untuk Turso: libsql://<db>-<akun>.turso.io");
-if (env.DATABASE_URL?.startsWith("libsql://")) required("DATABASE_AUTH_TOKEN", null, "turso db tokens create <nama>");
+// Di VPS (disk permanen) DATABASE_URL boleh kosong: database berupa file di folder ./data.
+if (!env.DATABASE_URL && !env.VERCEL) {
+  warnings.push("DATABASE_URL kosong — database disimpan di file ./data/uanglapangan.db (hanya aman untuk VPS dengan disk permanen).");
+} else {
+  required("DATABASE_URL", (v) => /^(libsql|https|wss):\/\//.test(v), "Untuk Turso: libsql://<db>-<akun>.turso.io");
+  if (env.DATABASE_URL?.startsWith("libsql://")) required("DATABASE_AUTH_TOKEN", null, "turso db tokens create <nama>");
+}
 
 // Akun, sinkron, cron
 minLength("BETTER_AUTH_SECRET", 32);

@@ -57,6 +57,10 @@ Vercel), selain itu folder `data/`. Pindahkan berkas lama ke R2 dengan `npm run 
 [docs/DEPLOY.md](docs/DEPLOY.md).** Semua variabel ada di [.env.example](.env.example);
 `npm run env:secrets` membuat secret, `node --env-file=<file> scripts/check-env.mjs` memeriksanya.
 
+**Deploy ke VPS sendiri (Nginx + PM2, database & foto di disk server, tanpa Turso/R2): lihat
+[docs/DEPLOY-VPS.md](docs/DEPLOY-VPS.md)** — termasuk cara pindah ke VPS lain
+(`deploy/vps/ekspor.sh` / `impor.sh`).
+
 Akun demo pengembangan (`npm run db:seed`): `demo@uanglapangan.id` / `0812 3456 7890`, sandi
 `lapangan123`. Jangan jalankan seed di produksi.
 

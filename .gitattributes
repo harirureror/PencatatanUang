@@ -1,0 +1,2 @@
+# Skrip server harus berakhiran baris LF (dijalankan di Linux).
+*.sh text eol=lf
