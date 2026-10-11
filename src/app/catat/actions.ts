@@ -45,6 +45,14 @@ async function readPhotos(formData: FormData, existingCount = 0) {
  * ditolak), catatannya tidak dibatalkan: pengguna dibawa ke halaman lampiran catatan itu dengan
  * penjelasan, supaya bisa mencoba lagi tanpa membuat catatan ganda — bukan halaman galat.
  */
+/** Pesan galat beserta penyebabnya (mis. galat database di balik galat Drizzle). */
+function describeError(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  const cause = error.cause instanceof Error ? ` ← ${error.cause.message}` : "";
+  // Query SQL panjang dari Drizzle tidak berguna bagi pengguna — ambil bagian awalnya saja.
+  return `${error.name}: ${error.message.replace(/\s+/g, " ").slice(0, 160)}${cause}`;
+}
+
 async function attachOrExplain(userId: string, transactionId: string, files: File[], formData: FormData) {
   try {
     await addReceipts(userId, transactionId, files);
@@ -54,7 +62,10 @@ async function attachOrExplain(userId: string, transactionId: string, files: Fil
     revalidatePath("/", "layout");
     const href = strukHref(transactionId, toReturnPath(formData.get("returnTo")));
     // redirect() melempar — pemanggil meneruskannya (galat tak dikenal dilempar ulang).
-    redirect(`${href}${href.includes("?") ? "&" : "?"}foto=${reason}`);
+    // Detail teknis singkat ikut ditampilkan agar penyebabnya bisa dilaporkan (tanpa nilai rahasia:
+    // pesan galat penyimpanan / database hanya memuat kunci berkas & kode galat).
+    const detail = reason === "gagal" ? `&detail=${encodeURIComponent(describeError(error).slice(0, 300))}` : "";
+    redirect(`${href}${href.includes("?") ? "&" : "?"}foto=${reason}${detail}`);
   }
 }
 

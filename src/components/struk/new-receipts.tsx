@@ -39,8 +39,9 @@ export function NewReceipts({ transactionId, existingCount }: NewReceiptsProps) 
           body,
         });
         if (!res.ok) {
-          const data = (await res.json().catch(() => null)) as { error?: string } | null;
-          setError(data?.error ?? "Gagal menyimpan foto. Coba lagi.");
+          const data = (await res.json().catch(() => null)) as { error?: string; detail?: string } | null;
+          const status = data ? "" : ` (HTTP ${res.status})`;
+          setError(`${data?.error ?? "Gagal menyimpan foto. Coba lagi."}${status}${data?.detail ? ` — Detail teknis: ${data.detail}` : ""}`);
           return;
         }
       } catch {

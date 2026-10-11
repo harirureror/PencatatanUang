@@ -52,6 +52,9 @@ export async function POST(request: Request, ctx: RouteContext<"/api/transaction
   } catch (error) {
     if (error instanceof ReceiptRejectedError) return badRequest(error.message);
     console.error("POST /api/transactions/[id]/receipts gagal:", error);
-    return Response.json({ error: "Gagal menyimpan foto struk." }, { status: 500, headers: noStore });
+    // Detail teknis singkat (pesan galat penyimpanan / database, tanpa nilai rahasia) untuk dilaporkan.
+    const cause = error instanceof Error && error.cause instanceof Error ? ` ← ${error.cause.message}` : "";
+    const detail = error instanceof Error ? `${error.name}: ${error.message.replace(/\s+/g, " ").slice(0, 160)}${cause}`.slice(0, 300) : String(error);
+    return Response.json({ error: "Gagal menyimpan foto struk.", detail }, { status: 500, headers: noStore });
   }
 }

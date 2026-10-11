@@ -60,6 +60,9 @@ export default async function LampiranStrukPage({
             {query.foto === "ditolak"
               ? "Foto ditolak (bukan JPG / PNG / WEBP / HEIC atau terlalu besar). Pilih foto lain di bawah."
               : "Penyimpanan foto di server sedang bermasalah. Coba tambahkan fotonya lagi di bawah; bila tetap gagal, hubungi pengurus aplikasi."}
+            {typeof query.detail === "string" && (
+              <span className="mt-1 block font-mono text-[11px] break-all opacity-80">Detail teknis: {query.detail.slice(0, 300)}</span>
+            )}
           </span>
         </p>
       )}
