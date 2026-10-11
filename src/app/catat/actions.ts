@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { toReturnPath } from "@/lib/return-path";
+import { strukHref, toReturnPath } from "@/lib/return-path";
 import type { TransactionType } from "@/lib/types";
 import { getCurrentUserId } from "@/server/current-user";
 import { readReceiptFiles } from "@/server/receipt-files";
@@ -41,6 +41,24 @@ async function readPhotos(formData: FormData, existingCount = 0) {
 }
 
 /**
+ * Simpan foto ke catatan yang SUDAH tersimpan. Bila gagal (penyimpanan berkas bermasalah, foto
+ * ditolak), catatannya tidak dibatalkan: pengguna dibawa ke halaman lampiran catatan itu dengan
+ * penjelasan, supaya bisa mencoba lagi tanpa membuat catatan ganda — bukan halaman galat.
+ */
+async function attachOrExplain(userId: string, transactionId: string, files: File[], formData: FormData) {
+  try {
+    await addReceipts(userId, transactionId, files);
+  } catch (error) {
+    const reason = error instanceof ReceiptRejectedError ? "ditolak" : "gagal";
+    if (reason === "gagal") console.error("Foto struk gagal disimpan:", error);
+    revalidatePath("/", "layout");
+    const href = strukHref(transactionId, toReturnPath(formData.get("returnTo")));
+    // redirect() melempar — pemanggil meneruskannya (galat tak dikenal dilempar ulang).
+    redirect(`${href}${href.includes("?") ? "&" : "?"}foto=${reason}`);
+  }
+}
+
+/**
  * Setelah transaksi berubah, saldo dihitung ulang dari database di setiap halaman —
  * jadi segarkan seluruh aplikasi (layout akar), bukan hanya halaman tujuan.
  */
@@ -71,7 +89,7 @@ export async function createTransaction(
     const created = await saveNewTransaction(userId, type, result.data, undefined, {
       noReceipt: formData.get("noReceipt") === "on" && photos.files.length === 0,
     });
-    if (photos.files.length > 0) await addReceipts(userId, created.id, photos.files);
+    if (photos.files.length > 0) await attachOrExplain(userId, created.id, photos.files, formData);
   } catch (error) {
     if (error instanceof NoActiveProjectError) return { errors: { form: error.message } };
     if (error instanceof TransactionConflictError) return { errors: error.fieldErrors };
@@ -109,7 +127,7 @@ export async function updateTransaction(
   try {
     const saved = await saveTransaction(userId, existing, result.data);
     if (!saved) return { errors: { form: NOT_FOUND } };
-    if (photos.files.length > 0) await addReceipts(userId, existing.id, photos.files);
+    if (photos.files.length > 0) await attachOrExplain(userId, existing.id, photos.files, formData);
     await setNoReceipt(userId, existing.id, formData.get("noReceipt") === "on");
   } catch (error) {
     if (error instanceof TransactionConflictError) return { errors: error.fieldErrors };

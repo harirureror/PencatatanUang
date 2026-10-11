@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
-import { ArrowLeft, ImageOff } from "lucide-react";
+import { ArrowLeft, ImageOff, TriangleAlert } from "lucide-react";
 
 import { NewReceipts } from "@/components/struk/new-receipts";
 import { ReceiptGallery } from "@/components/struk/receipt-gallery";
@@ -48,6 +48,21 @@ export default async function LampiranStrukPage({
           <p className="truncate text-sm text-muted-foreground">{title}</p>
         </div>
       </header>
+
+      {(query.foto === "gagal" || query.foto === "ditolak") && (
+        <p
+          role="alert"
+          className="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-sm text-amber-900 ring-1 ring-amber-300 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-800"
+        >
+          <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <span>
+            <strong>Catatan sudah tersimpan, tetapi fotonya belum.</strong>{" "}
+            {query.foto === "ditolak"
+              ? "Foto ditolak (bukan JPG / PNG / WEBP / HEIC atau terlalu besar). Pilih foto lain di bawah."
+              : "Penyimpanan foto di server sedang bermasalah. Coba tambahkan fotonya lagi di bawah; bila tetap gagal, hubungi pengurus aplikasi."}
+          </span>
+        </p>
+      )}
 
       <section
         aria-label="Ringkasan transaksi"
