@@ -241,7 +241,9 @@ export async function salin({ arah = "ke-salinan", uji = false, timpa = false, l
     const report = Object.fromEntries([...data].map(([t, d]) => [t, d.rows.length]));
     log(`  baris: ${Object.entries(report).map(([t, n]) => `${t} ${n}`).join(" · ")}`);
 
+    // Foto yang sudah dihapus (deleted_at) filenya juga sudah tidak ada — tidak perlu disalin.
     const keys = (data.get("receipts")?.rows ?? [])
+      .filter((r) => r.deleted_at === null)
       .map((r) => String(r.file_url))
       .filter((u) => !u.startsWith("/") && !/^[a-z]+:/i.test(u))
       .map((u) => `receipts/${u}`);

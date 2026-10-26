@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 
+import { ReceiptActions } from "@/components/struk/receipt-actions";
 import { ReceiptViewer } from "@/components/struk/receipt-viewer";
 import type { Receipt } from "@/lib/types";
 
@@ -20,7 +21,7 @@ type ReceiptGalleryProps = {
   title: string;
 };
 
-/** Grid foto bukti; ketuk salah satu untuk membuka penampil layar penuh. */
+/** Grid foto bukti; ketuk salah satu untuk membuka penampil layar penuh, atau ganti / hapus fotonya. */
 export function ReceiptGallery({ receipts, title }: ReceiptGalleryProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
@@ -52,6 +53,7 @@ export function ReceiptGallery({ receipts, title }: ReceiptGalleryProps) {
                 </p>
               </div>
             </button>
+            <ReceiptActions receipt={r} position={i + 1} />
           </li>
         ))}
       </ul>

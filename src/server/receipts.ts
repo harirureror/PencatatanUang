@@ -139,6 +139,64 @@ export async function addReceipts(
   }
 }
 
+/**
+ * Hapus satu lampiran milik pengguna tanpa menyentuh catatannya. Baris ditandai terhapus
+ * (perangkat lain ikut menyesuaikan saat sinkron; trigger menghitung ulang has_receipt),
+ * lalu filenya dihapus dari penyimpanan.
+ * @returns false bila lampiran tidak ditemukan / milik orang lain.
+ */
+export async function deleteReceipt(userId: string, receiptId: string): Promise<boolean> {
+  const row = await getOwnedReceipt(userId, receiptId);
+  if (!row) return false;
+  await db
+    .update(receipts)
+    .set({ deletedAt: new Date().toISOString() })
+    .where(and(eq(receipts.id, row.id), isNull(receipts.deletedAt)));
+  if (isStoredKey(row.fileUrl)) await deleteStoredFiles([row.fileUrl]);
+  return true;
+}
+
+/**
+ * Ganti foto satu lampiran: foto baru disimpan sebagai lampiran baru di catatan yang sama, dan
+ * lampiran lama ditandai terhapus — dalam satu transaksi database, sehingga jumlah foto tidak
+ * berubah dan tidak pernah sesaat kosong. File lama dihapus setelah berhasil.
+ * @returns lampiran baru, atau null bila lampiran lama tidak ditemukan.
+ */
+export async function replaceReceipt(userId: string, receiptId: string, file: File): Promise<Receipt | null> {
+  const old = await getOwnedReceipt(userId, receiptId);
+  if (!old) return null;
+  const { bytes, mimeType } = await readImage(file);
+  const id = crypto.randomUUID();
+  const row = {
+    id,
+    transactionId: old.transactionId,
+    fileUrl: receiptKey(old.transactionId, id, mimeType),
+    fileName: file.name.slice(0, 200) || "struk",
+    mimeType,
+    sizeBytes: bytes.byteLength,
+    // Urutan galeri mengikuti waktu unggah — foto pengganti menempati posisi foto lama.
+    uploadedAt: old.uploadedAt,
+  };
+
+  await saveReceiptFile(row.fileUrl, bytes);
+  let saved: ReceiptRow;
+  try {
+    saved = await db.transaction(async (tx) => {
+      const [inserted] = await tx.insert(receipts).values(row).returning();
+      await tx
+        .update(receipts)
+        .set({ deletedAt: new Date().toISOString() })
+        .where(and(eq(receipts.id, old.id), isNull(receipts.deletedAt)));
+      return inserted;
+    });
+  } catch (error) {
+    await deleteReceiptFile(row.fileUrl).catch(() => {});
+    throw error;
+  }
+  if (isStoredKey(old.fileUrl)) await deleteStoredFiles([old.fileUrl]);
+  return toReceipt(saved);
+}
+
 /** Lampiran satu transaksi milik pengguna, urut waktu unggah. null bila transaksi tidak ada. */
 export async function listReceipts(userId: string, transactionId: string): Promise<Receipt[] | null> {
   if (!(await ownedTransactionId(userId, transactionId))) return null;
