@@ -110,8 +110,13 @@ sekali sehari salinan database ke `data/salinan-db/` (7 hari terakhir); dan — 
 diatur — sekali sehari penyalinan ke Vercel.
 
 ```bash
-(crontab -l 2>/dev/null; echo "7 * * * * cd /opt/uanglapangan && $(command -v node) --env-file=.env.production deploy/vps/tugas-terjadwal.mjs >> /var/log/uanglapangan-cron.log 2>&1") | crontab -
+echo "7 * * * * root cd /opt/uanglapangan && $(command -v node) --env-file=.env.production deploy/vps/tugas-terjadwal.mjs >> /var/log/uanglapangan-cron.log 2>&1" > /etc/cron.d/uanglapangan
+chmod 644 /etc/cron.d/uanglapangan
 ```
+
+Jadwal disimpan di berkasnya sendiri (`/etc/cron.d/uanglapangan`), bukan di crontab root: di server
+bersama, crontab root bisa tertimpa saat orang lain memasang jadwal aplikasinya
+(`echo … | crontab -`), dan jadwal ini ikut hilang tanpa pemberitahuan.
 
 Coba sekali sekarang: `node --env-file=.env.production deploy/vps/tugas-terjadwal.mjs`
 
@@ -306,7 +311,7 @@ Seluruh isi aplikasi ada di dua tempat: folder `data/` (database, foto, arsip) d
    yang sama membuat pengguna tetap masuk, Google Drive tetap terhubung, dan penyalinan ke
    Vercel tetap jalan.
 3. Hentikan aplikasi di VPS lama supaya tidak ada catatan baru yang tertinggal:
-   `pm2 stop uanglapangan`, dan hapus baris cron-nya (`crontab -e`). Catatan yang dibuat di VPS
+   `pm2 stop uanglapangan`, dan hapus jadwalnya (`rm /etc/cron.d/uanglapangan`). Catatan yang dibuat di VPS
    lama setelah langkah 1 tidak ikut pindah — lakukan langkah 1–3 berurutan tanpa jeda panjang.
 4. Ubah record DNS `A` subdomain ke IP VPS baru, tunggu menyebar, lalu jalankan A6 (HTTPS) di
    VPS baru.
