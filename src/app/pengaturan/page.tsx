@@ -5,6 +5,7 @@ import {
   Banknote,
   FolderKanban,
   HardDriveDownload,
+  KeyRound,
   RefreshCw,
   Tags,
   UserRound,
@@ -78,6 +79,12 @@ export default async function PengaturanPage() {
             Ubah
           </span>
         </Link>
+        <SettingsLinkRow
+          href="/pengaturan/sandi"
+          icon={KeyRound}
+          title="Ganti kata sandi"
+          description="Perangkat lain akan diminta masuk ulang"
+        />
       </SettingsSection>
 
       {/* 2. Format uang */}

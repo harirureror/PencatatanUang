@@ -93,6 +93,22 @@ export function validateNewPassword(password: string, confirm: string, identifie
   return errors;
 }
 
+export type ChangePasswordField = "current" | "password" | "confirm";
+export type ChangePasswordErrors = Partial<Record<ChangePasswordField, string>>;
+
+/** Ganti sandi dari Pengaturan: sandi saat ini + sandi baru (syarat sama dengan daftar akun). */
+export function validateChangePassword(
+  input: Record<ChangePasswordField, string>,
+  identifier = "",
+): ChangePasswordErrors {
+  const errors: ChangePasswordErrors = { ...validateNewPassword(input.password, input.confirm, identifier) };
+  if (!input.current) errors.current = "Isi kata sandi saat ini.";
+  else if (!errors.password && input.password === input.current) {
+    errors.password = "Kata sandi baru harus berbeda dari yang sekarang.";
+  }
+  return errors;
+}
+
 export const RESET_CODE_LENGTH = 6;
 
 /** "+6281234567890" → "0812-3456-7890" (tampilan). */

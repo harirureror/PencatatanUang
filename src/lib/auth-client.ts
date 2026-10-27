@@ -1,6 +1,6 @@
 // Panggilan akun dari browser ke /api/akun/* (lihat route handler masing-masing).
 // Bentuk hasilnya dipakai langsung oleh form masuk / daftar / lupa sandi.
-import type { NewPasswordErrors, SignInErrors, SignUpErrors, SignUpInput } from "@/lib/auth-rules";
+import type { ChangePasswordErrors, NewPasswordErrors, SignInErrors, SignUpErrors, SignUpInput } from "@/lib/auth-rules";
 
 export type AuthUser = { id: string; name: string; email: string | null; phone: string | null };
 
@@ -68,6 +68,20 @@ export async function saveProfile(input: {
   const body = (await res.json().catch(() => ({ error: "Server tidak menjawab dengan benar." }))) as Body;
   if (res.ok) return { ok: true, user: body.data!.user as AuthUser };
   return { ok: false, error: body.error, fieldErrors: body.fieldErrors };
+}
+
+/** Ganti sandi akun yang sedang masuk; berhasil → jumlah perangkat lain yang dikeluarkan. */
+export async function changePassword(input: {
+  current: string;
+  password: string;
+  confirm: string;
+}): Promise<
+  | { ok: true; signedOut: number }
+  | { ok: false; error?: string; fieldErrors?: ChangePasswordErrors; retryAfter?: number }
+> {
+  const { ok, body } = await post("/api/akun/sandi", input);
+  if (ok) return { ok: true, signedOut: Number(body.data!.signedOut) || 0 };
+  return { ok: false, error: body.error, fieldErrors: body.fieldErrors, retryAfter: body.retryAfter };
 }
 
 export async function signOut(): Promise<void> {
