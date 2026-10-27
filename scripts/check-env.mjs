@@ -82,6 +82,8 @@ if (env.RESEND_API_KEY && env.NOTIFY_EMAIL_FROM) ok.push("Email (Resend)");
 else warnings.push("RESEND_API_KEY / NOTIFY_EMAIL_FROM kosong — tautan lupa sandi & pemberitahuan backup tidak terkirim lewat email.");
 if (env.FONNTE_TOKEN) ok.push("WhatsApp (Fonnte)");
 else warnings.push("FONNTE_TOKEN kosong — akun nomor HP tidak bisa menerima kode lupa sandi.");
+if (env.ADMIN_ACCOUNTS?.trim()) ok.push(`Admin (${env.ADMIN_ACCOUNTS.split(",").filter((v) => v.trim()).length} akun)`);
+else warnings.push("ADMIN_ACCOUNTS kosong — tidak ada admin yang bisa mengatur ulang sandi pengguna tanpa email / WhatsApp.");
 
 console.log(`✓ Siap: ${ok.join(", ") || "-"}`);
 for (const w of warnings) console.log(`! ${w}`);

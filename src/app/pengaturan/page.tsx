@@ -7,6 +7,7 @@ import {
   HardDriveDownload,
   KeyRound,
   RefreshCw,
+  ShieldCheck,
   Tags,
   UserRound,
 } from "lucide-react";
@@ -17,6 +18,7 @@ import { SettingsLinkRow, SettingsSection } from "@/components/pengaturan/settin
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { formatPhone } from "@/lib/auth-rules";
 import { currencyName, NUMBER_FORMATS } from "@/lib/money-settings";
+import { isAdmin } from "@/server/admin";
 import { getMoneyDisplay, getMoneyFormat, getMoneyFormatter } from "@/server/money";
 import { listCategories } from "@/server/categories";
 import { getCurrentUserId } from "@/server/current-user";
@@ -132,6 +134,14 @@ export default async function PengaturanPage() {
         <SettingsLinkRow href="/proyek" icon={FolderKanban} title="Kelola proyek" />
         <SettingsLinkRow href="/sinkron" icon={RefreshCw} title="Sinkronisasi" description="Data di perangkat & server" />
         <SettingsLinkRow href="/backup" icon={HardDriveDownload} title="Backup ke Google Drive" />
+        {isAdmin(user) && (
+          <SettingsLinkRow
+            href="/admin/pengguna"
+            icon={ShieldCheck}
+            title="Kelola pengguna"
+            description="Admin · atur ulang sandi akun lain"
+          />
+        )}
         <ResetDefaultsRow />
         <SignOutRow />
       </SettingsSection>
