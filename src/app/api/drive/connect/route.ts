@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { DRIVE_OAUTH_COOKIE, DRIVE_OAUTH_COOKIE_OPTIONS } from "@/lib/drive-oauth-cookie";
 import { buildAuthUrl, googleOAuthConfig, newAuthRequest, redirectUri } from "@/server/google-oauth";
+import { publicOrigin, publicUrl } from "@/server/public-url";
 
 /**
  * GET /api/drive/connect — mulai menghubungkan Google Drive: arahkan ke layar izin Google
@@ -10,10 +11,10 @@ import { buildAuthUrl, googleOAuthConfig, newAuthRequest, redirectUri } from "@/
 export function GET(request: NextRequest) {
   const config = googleOAuthConfig();
   if (!config) {
-    return NextResponse.redirect(new URL("/backup?drive=belum-dikonfigurasi", request.url));
+    return NextResponse.redirect(publicUrl("/backup?drive=belum-dikonfigurasi", request));
   }
   const { state, verifier, challenge } = newAuthRequest();
-  const redirect = redirectUri(request.nextUrl.origin);
+  const redirect = redirectUri(publicOrigin(request));
   const response = NextResponse.redirect(buildAuthUrl(config, { state, challenge, redirect }));
   response.cookies.set(
     DRIVE_OAUTH_COOKIE,

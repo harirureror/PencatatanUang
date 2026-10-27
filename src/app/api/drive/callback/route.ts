@@ -6,6 +6,7 @@ import { DRIVE_OAUTH_COOKIE, DRIVE_OAUTH_COOKIE_OPTIONS } from "@/lib/drive-oaut
 import { getCurrentUserId } from "@/server/current-user";
 import { saveGoogleConnection } from "@/server/drive-connections";
 import { exchangeCode, googleOAuthConfig, redirectUri } from "@/server/google-oauth";
+import { publicOrigin, publicUrl } from "@/server/public-url";
 
 function sameString(a: string, b: string): boolean {
   const x = Buffer.from(a);
@@ -20,7 +21,7 @@ function sameString(a: string, b: string): boolean {
  */
 export async function GET(request: NextRequest) {
   const done = (result: string) => {
-    const response = NextResponse.redirect(new URL(`/backup?drive=${result}`, request.url));
+    const response = NextResponse.redirect(publicUrl(`/backup?drive=${result}`, request));
     response.cookies.set(DRIVE_OAUTH_COOKIE, "", { ...DRIVE_OAUTH_COOKIE_OPTIONS, maxAge: 0 });
     response.headers.set("Cache-Control", "no-store");
     return response;
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
     const tokens = await exchangeCode(config, {
       code,
       verifier: saved.verifier,
-      redirect: redirectUri(request.nextUrl.origin),
+      redirect: redirectUri(publicOrigin(request)),
     });
     await saveGoogleConnection(await getCurrentUserId(), tokens);
     return done("terhubung");

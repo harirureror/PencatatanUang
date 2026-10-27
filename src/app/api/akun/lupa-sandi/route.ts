@@ -1,5 +1,6 @@
 import { parseIdentifier } from "@/lib/auth-rules";
 import { requestPasswordReset } from "@/server/password-reset";
+import { publicOrigin } from "@/server/public-url";
 import { clientIp, hitRateLimit } from "@/server/rate-limit";
 
 const noStore = { "Cache-Control": "no-store" };
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
     );
   }
   try {
-    await requestPasswordReset(id, process.env.BETTER_AUTH_URL ?? new URL(request.url).origin);
+    await requestPasswordReset(id, publicOrigin(request));
   } catch (error) {
     // Tetap jawab sama supaya tidak membocorkan apa pun; galat dicatat di server.
     console.error("POST /api/akun/lupa-sandi gagal:", error);
