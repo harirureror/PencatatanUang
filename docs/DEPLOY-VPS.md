@@ -41,6 +41,11 @@ Cek dari VPS (hasilnya harus IP VPS; bisa perlu beberapa menit):
 getent hosts $DOMAIN
 ```
 
+**DNS di Cloudflare?** Periksa dulu firewall VPS: `ufw status | grep 80`. Bila port 80/443 hanya
+dibuka untuk rentang IP Cloudflare (seperti VPS kantor), record **harus Proxied (awan oranye)** —
+dengan *DNS only* browser tersambung langsung ke VPS, diblokir, dan berakhir *timeout*. Pada
+langkah A5, aktifkan juga baris `include … cloudflare-realip.conf` di blok Nginx.
+
 ## A2. Ambil kode
 
 ```bash
@@ -86,6 +91,8 @@ perintah yang dicetaknya.
 
 ```bash
 sed "s/kas.domainanda.com/$DOMAIN/" deploy/vps/nginx.conf > /etc/nginx/sites-available/uanglapangan
+# Lewat proxy Cloudflare (lihat A1)? Aktifkan pembacaan IP asli pengunjung:
+#   sed -i 's|# include /opt|include /opt|' /etc/nginx/sites-available/uanglapangan
 ln -s /etc/nginx/sites-available/uanglapangan /etc/nginx/sites-enabled/uanglapangan
 nginx -t && systemctl reload nginx
 ```
