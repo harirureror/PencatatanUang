@@ -35,7 +35,7 @@ const CONTENT_TYPES = { jpg: "image/jpeg", png: "image/png", webp: "image/webp",
 /** Galat yang pesannya ditujukan ke orang yang menjalankan skrip. */
 export class SalinError extends Error {}
 
-const q = (name) => `"${String(name).replace(/"/g, '""')}"`;
+export const q = (name) => `"${String(name).replace(/"/g, '""')}"`;
 
 function localStorage(dir) {
   const root = path.resolve(ROOT, dir);
@@ -67,7 +67,7 @@ function localStorage(dir) {
 }
 
 /** Dua sisi penyalinan dari env: { utama, salinan }, masing-masing { db(), storage, label }. */
-function endpoints() {
+export function endpoints() {
   const mirrorUrl = process.env.MIRROR_DATABASE_URL;
   if (!mirrorUrl) throw new SalinError("MIRROR_DATABASE_URL belum diisi (alamat database salinan / Turso).");
   const mirrorStorage = process.env.MIRROR_STORAGE_DIR ? localStorage(process.env.MIRROR_STORAGE_DIR) : r2FromEnv("MIRROR_");
@@ -96,7 +96,7 @@ async function tableNames(db) {
 }
 
 /** "tabel: kolom tipe, …" per tabel — untuk membandingkan skema dua database. */
-async function schemaSignature(db, tables) {
+export async function schemaSignature(db, tables) {
   const out = {};
   for (const t of tables) {
     const info = await db.execute(`pragma table_info(${q(t)})`);
@@ -165,7 +165,7 @@ function insertStatements(table, columns, rows) {
   return statements;
 }
 
-async function copyFiles(source, target, keys, dryRun, log) {
+export async function copyFiles(source, target, keys, dryRun, log) {
   const stats = { diperiksa: keys.length, disalin: 0, sudahAda: 0, hilangDiSumber: 0 };
   for (const key of keys) {
     if (await target.storage.has(key)) {

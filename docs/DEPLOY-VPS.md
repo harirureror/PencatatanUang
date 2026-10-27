@@ -263,6 +263,24 @@ Mulai sekarang cron di A7 menyalin sekali sehari. Hasilnya tercatat di
 APK Android menunjuk ke satu alamat (subdomain VPS). Selama darurat, tim memakai alamat Vercel
 lewat browser HP.
 
+## C5. Pindahkan data satu akun dari Vercel ke VPS
+
+Untuk satu orang yang sempat mencatat di Vercel, sementara akun dengan email yang sama sudah ada
+di VPS. Data akun-akun lain tidak ikut tersentuh, dan aplikasi tidak perlu dihentikan.
+
+```bash
+cd /opt/uanglapangan
+node --env-file=.env.production scripts/salin-akun.mjs --email orang@contoh.com --uji
+node --env-file=.env.production scripts/salin-akun.mjs --email orang@contoh.com
+```
+
+Penggabungan dilakukan per catatan (proyek, kategori buatan, transaksi, lampiran, pengaturan):
+catatan yang hanya ada di Vercel ditambahkan ke VPS, catatan yang ada di keduanya diambil versi
+yang terakhir diubah, dan catatan yang hanya ada di VPS dibiarkan. Foto struk ikut disalin
+dari R2. Sandi, login, dan koneksi Google Drive akun VPS tidak diubah. HP yang tersambung ke VPS
+menerima hasilnya saat sinkron berikutnya. Menjalankannya ulang aman: catatan yang sudah sama
+dilewati.
+
 ---
 
 # Tiga lapis cadangan
